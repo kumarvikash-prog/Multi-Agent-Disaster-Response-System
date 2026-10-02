@@ -1,0 +1,15 @@
+{
+  "name": "disasterai",
+  "private": true,
+  "description": "Root convenience scripts for the DisasterAI monorepo",
+  "scripts": {
+    "dev:api": "cd backend && .venv/bin/uvicorn app.main:app --reload --port 8000",
+    "dev:web": "cd frontend && npm run dev",
+    "test:api": "cd backend && .venv/bin/python -m pytest",
+    "test:web": "cd frontend && npm run test",
+    "lint": "cd backend && .venv/bin/ruff check app/ && .venv/bin/ruff format --check app/ && cd ../frontend && npm run lint",
+    "migrate": "cd backend && .venv/bin/alembic upgrade head",
+    "seed": "cd backend && .venv/bin/python scripts/seed.py",
+    "gen:api": "cd frontend && npm run gen:api"
+  }
+}

@@ -1,0 +1,56 @@
+repos:
+  # ── Python: Ruff lint ────────────────────────────────────────────────────────
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.6.9
+    hooks:
+      - id: ruff
+        name: ruff lint
+        args: [--fix]
+        files: ^backend/
+      - id: ruff-format
+        name: ruff format
+        files: ^backend/
+
+  # ── Python: mypy ─────────────────────────────────────────────────────────────
+  - repo: local
+    hooks:
+      - id: mypy
+        name: mypy (backend)
+        language: system
+        entry: backend/.venv/bin/mypy
+        args: [backend/app/]
+        files: ^backend/app/
+        pass_filenames: false
+
+  # ── Python: import-linter ─────────────────────────────────────────────────────
+      - id: import-linter
+        name: import-linter (backend)
+        language: system
+        entry: backend/.venv/bin/lint-imports
+        args: [--config, backend/pyproject.toml]
+        files: ^backend/app/
+        pass_filenames: false
+
+  # ── Frontend: ESLint ──────────────────────────────────────────────────────────
+      - id: eslint
+        name: eslint (frontend)
+        language: system
+        entry: bash -c 'cd frontend && npm run lint'
+        files: ^frontend/src/
+        pass_filenames: false
+
+  # ── Frontend: Prettier ────────────────────────────────────────────────────────
+      - id: prettier
+        name: prettier (frontend)
+        language: system
+        entry: bash -c 'cd frontend && npx prettier --check src/'
+        files: ^frontend/src/
+        pass_filenames: false
+
+  # ── Frontend: tsc ─────────────────────────────────────────────────────────────
+      - id: tsc
+        name: tsc --noEmit (frontend)
+        language: system
+        entry: bash -c 'cd frontend && npx tsc --noEmit'
+        files: ^frontend/
+        pass_filenames: false

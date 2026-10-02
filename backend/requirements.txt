@@ -1,0 +1,18 @@
+# Runtime dependencies — pinned for reproducible Render deploys
+# Generated from: pip install <packages> && pip freeze > requirements-all.txt
+# Split manually into runtime (this file) vs dev (requirements-dev.txt)
+
+fastapi==0.115.0
+uvicorn[standard]==0.30.6
+sqlalchemy==2.0.35
+psycopg[binary]==3.2.3
+alembic==1.13.3
+pydantic==2.9.2
+pydantic-settings==2.5.2
+bcrypt==4.2.0
+pyjwt==2.9.0
+email-validator==2.2.0
+langgraph==0.2.28
+langchain==0.3.1
+langchain-google-genai==2.0.1
+python-multipart==0.0.12

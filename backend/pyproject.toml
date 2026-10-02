@@ -1,0 +1,139 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.backends.legacy:build"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["app*"]
+
+# ─── Ruff ─────────────────────────────────────────────────────────────────────
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+
+[tool.ruff.lint]
+select = [
+    "E",   # pycodestyle errors
+    "W",   # pycodestyle warnings
+    "F",   # pyflakes
+    "I",   # isort
+    "B",   # flake8-bugbear
+    "C4",  # flake8-comprehensions
+    "UP",  # pyupgrade
+    "N",   # pep8-naming
+    "ANN", # flake8-annotations (encourage type hints)
+    "S",   # flake8-bandit (security)
+    "T20", # flake8-print (no bare print)
+]
+ignore = [
+    "ANN101", # missing type annotation for self
+    "ANN102", # missing type annotation for cls
+    "S101",   # assert usage (allowed in tests)
+    "ANN401", # disallow Any — mypy handles this
+]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = ["ANN", "S"]
+"scripts/*" = ["T20", "ANN", "S"]
+"alembic/*" = ["ANN", "E501"]
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+
+# ─── Mypy ─────────────────────────────────────────────────────────────────────
+[tool.mypy]
+python_version = "3.12"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = true
+disallow_any_generics = false
+check_untyped_defs = true
+no_implicit_optional = true
+
+[[tool.mypy.overrides]]
+module = ["app.core.*", "app.shared.*", "app.modules.triage.*"]
+strict = true
+disallow_any_generics = true
+
+[[tool.mypy.overrides]]
+module = [
+    "langchain.*",
+    "langchain_google_genai.*",
+    "langgraph.*",
+    "alembic.*",
+]
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = ["tests.*"]
+disallow_untyped_defs = false
+
+# ─── Pytest ───────────────────────────────────────────────────────────────────
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+addopts = ["-v", "--tb=short"]
+markers = [
+    "live: marks tests that call the real LLM API (deselect with -m 'not live')",
+    "integration: marks integration tests that require a real database",
+]
+
+# ─── Coverage ─────────────────────────────────────────────────────────────────
+[tool.coverage.run]
+source = ["app"]
+omit = ["app/modules/ai/prompts/*", "alembic/*", "scripts/*"]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "if TYPE_CHECKING:",
+    "raise NotImplementedError",
+]
+
+# ─── import-linter ─────────────────────────────────────────────────────────────
+[tool.importlinter]
+root_packages = ["app"]
+include_external_packages = true
+
+[[tool.importlinter.contracts]]
+name = "triage is pure — no FastAPI, SQLAlchemy, or app imports"
+type = "forbidden"
+source_modules = ["app.modules.triage"]
+forbidden_modules = [
+    "fastapi",
+    "sqlalchemy",
+    "app.core.db",
+    "app.modules.users",
+    "app.modules.incidents",
+    "app.modules.resources",
+    "app.modules.hospitals",
+    "app.modules.audit",
+    "app.modules.ai",
+    "app.modules.workflow",
+]
+
+[[tool.importlinter.contracts]]
+name = "ai must not import repositories"
+type = "forbidden"
+source_modules = ["app.modules.ai"]
+forbidden_modules = [
+    "app.modules.users.repository",
+    "app.modules.incidents.repository",
+    "app.modules.resources.repository",
+    "app.modules.hospitals.repository",
+    "app.modules.audit.repository",
+]
+
+[[tool.importlinter.contracts]]
+name = "routers must not import SQLAlchemy Session directly"
+type = "forbidden"
+source_modules = [
+    "app.modules.auth.router",
+    "app.modules.incidents.router",
+    "app.modules.resources.router",
+    "app.modules.hospitals.router",
+]
+forbidden_modules = ["sqlalchemy.orm.session"]

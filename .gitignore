@@ -1,28 +1,62 @@
-# Python
+# ─── Python ────────────────────────────────────────────────────────────────────
+.venv/
+venv/
+env/
 __pycache__/
 *.py[cod]
-*$py.class
-*.so
+*.pyo
+*.pyd
 .Python
-env/
-venv/
-ENV/
-env.bak/
-venv.bak/
+*.egg-info/
+dist/
+build/
+*.egg
+.eggs/
 
-# Environment Variables & Secrets
+# Mypy
+.mypy_cache/
+*.dmypy.json
+dmypy.json
+
+# Ruff
+.ruff_cache/
+
+# Pytest
+.pytest_cache/
+htmlcov/
+.coverage
+coverage.xml
+*.cover
+
+# Alembic compiled
+*.pyc
+
+# ─── Node / Frontend ────────────────────────────────────────────────────────────
+node_modules/
+frontend/dist/
+frontend/build/
+frontend/.vite/
+*.tsbuildinfo
+
+# ─── Secrets — never commit real env files ─────────────────────────────────────
 .env
 .env.local
-*.env
+.env.*.local
+backend/.env
+frontend/.env
 
-# IDE & Editor files
-.vscode/
-.idea/
+# ─── OS / Editor ────────────────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
 *.swp
 *.swo
-.DS_Store
+.idea/
+.vscode/settings.json
+*.orig
 
-# Logs & temporary files
-*.log
-scratch/
-tmp/
+# ─── Evals / scratch ────────────────────────────────────────────────────────────
+evals/data/
+evals/results/
+
+personal_docs/
+.personal_docs/

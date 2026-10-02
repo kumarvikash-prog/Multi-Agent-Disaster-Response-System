@@ -1,114 +1,178 @@
-# Multi-Agent Disaster Response System
+# DisasterAI — Multi-Agent Disaster Response System
 
-> Capstone Project built with ❤️.
-
-An intelligent multi-agent framework designed to coordinate disaster response, assess real-time damage, allocate resources, and streamline emergency communications.
+> Citizens report emergencies; an AI pipeline structures and prioritises them; a single authority reviews, edits, and approves a dispatch of seeded response units; the citizen sees status.
 
 ---
 
-## 👥 Team Contribution Guidelines & Workflow
+## What is DisasterAI?
 
-To maintain clean code and avoid merge conflicts, **all team members must follow this workflow**. Please read this carefully before writing code!
-
----
-
-### 🌿 1. Branching Strategy
-
-> **Rule #1: NEVER commit directly to `main`.**  
-> The `main` branch is protected and contains only stable, reviewed, working code.
-
-#### Branch Naming Format:
-
-Always create a branch from the latest `main` using this format:
-
-- `feature/<feature-name>` (for new features or modules)
-- `fix/<bug-name>` (for fixing bugs or broken code)
-- `docs/<doc-update>` (for updating README, documentation, or reports)
-
-**Examples:**
-
-- `feature/disaster-detection-agent`
-- `feature/resource-allocation-logic`
-- `fix/agent-communication-timeout`
-- `docs/setup-instructions`
+DisasterAI is a deliberately simple, deployable-from-day-one modular monolith that:
+- Lets citizens submit emergency reports (flood, fire, building collapse, etc.)
+- Runs an LLM-powered analysis pipeline (LangGraph + Gemini) to classify and score urgency
+- Presents a structured recommendation to a human authority for review and approval
+- Dispatches seeded response units (ambulances, fire trucks, rescue teams, medical teams)
+- Shows the citizen their incident status in real time (polling)
 
 ---
 
-### 🔄 2. Step-by-Step Contribution Steps
+## Architecture at a glance
 
-Follow these simple Git commands in order:
-
-#### Step 1: Update your local `main`
-
-> 🚨♦️🔴 Always pull the latest changes before starting new work:
-
-```bash
-git checkout main
-git pull origin main
+```
+Browser (React/Vite) ──► /api rewrite ──► FastAPI (uvicorn)
+                                              │
+                          ┌───────────────────┤
+                          │                   │
+                     PostgreSQL          LangGraph
+                     (Neon, cloud)       + Gemini API
 ```
 
-#### Step 2: Create a new branch
-
-```bash
-git checkout -b feature/your-feature-name
-```
-
-#### Step 3: Work on your changes & commit
-
-Write small, meaningful commits instead of one huge commit:
-
-```bash
-git status
-git add <files-you-changed>
-git commit -m "feat: add initial prompt for damage assessment agent"
-```
-
-_Commit message prefixes to use:_
-
-- `feat:` (New feature)
-- `fix:` (Bug fix)
-- `docs:` (Documentation update)
-- `refactor:` (Code restructuring without feature changes)
-
-#### Step 4: Push branch to GitHub
-
-```bash
-git push origin feature/your-feature-name
-```
-
-#### Step 5: Open a Pull Request (PR)
-
-1. Go to the project repository on GitHub.
-2. Click **"Compare & pull request"**.
-3. Add a clear title and brief description explaining:
-   - What does this PR do?
-   - How can teammates test it?
-4. Request at least **one team member** to review your code.
-5. Once approved and checks pass, merge into `main` and delete the branch.
+| Layer | Technology |
+|---|---|
+| Frontend | React 18 + TypeScript, Vite, Tailwind CSS, TanStack Query, React Hook Form + Zod |
+| Backend | Python 3.12, FastAPI, SQLAlchemy 2.x (sync), psycopg 3, Alembic |
+| AI | LangGraph, LangChain, `langchain-google-genai` (Gemini default) |
+| Database | PostgreSQL 16 (Neon in cloud, local native install for dev) |
+| Hosting | Render (web service + static site) |
 
 ---
 
-### ✅ 3. What to Do (Best Practices)
+## Repository structure
 
-- **Pull frequently:** Run `git pull origin main` often to stay updated with your team.
-- **Keep PRs small:** Smaller PRs are much easier to review, test, and merge without conflicts.
-- **Test locally before pushing:** Make sure your code runs and doesn't crash existing functionality.
-- **Use meaningful commit messages:** Say what you did (e.g., `feat: setup fastAPI route for agent query` instead of `changes` or `update`).
-- **Communicate with the team:** Mention in group chat if you are touching shared configuration files or shared agent base classes.
+```
+disasterai/
+├── backend/          # FastAPI app (Python 3.12)
+│   ├── app/
+│   │   ├── core/     # config, db, security, errors, logging, middleware, rate_limit, deps
+│   │   ├── shared/   # enums, pagination, time helpers
+│   │   └── modules/  # auth, users, incidents, resources, hospitals, triage, ai, workflow, audit
+│   ├── alembic/      # database migrations
+│   └── scripts/      # seed, create_authority, reset_demo, etc.
+├── frontend/         # React + TypeScript (Vite)
+│   └── src/
+│       ├── app/      # router, providers
+│       ├── pages/    # thin route components
+│       ├── features/ # auth, citizen-reports, authority-incidents, resources, hospitals
+│       └── shared/   # api client, components, hooks, utils
+├── docs/             # architecture, data model, API conventions, ADRs, runbook, onboarding
+├── evals/            # AI evaluation datasets (Phase 5+)
+└── .github/          # CODEOWNERS, PR template
+```
 
 ---
 
-### ❌ 4. What to Avoid (Strictly Prohibited)
+## Local prerequisites
 
-- ❌ **Do NOT push directly to `main` branch.**
-- ❌ **Do NOT commit secrets or sensitive data:** Never commit API keys (e.g., Gemini / OpenAI / Map API keys), database credentials, or `.env` files. Always use `.env.example`.
-- ❌ **Do NOT commit virtual environments or dependencies:** Never commit `venv/`, `__pycache__/`, or `node_modules/`. (Ensure they are added in `.gitignore`).
-- ❌ **Do NOT force push (`git push --force`):** This can overwrite your teammates' work.
-- ❌ **Do NOT merge your own PR without review:** Always get another team member to review and approve your code.
-- ❌ **Do NOT leave broken code on `main`:** If a feature isn't working yet, keep working on your branch.
+| Tool | Version |
+|---|---|
+| Python | **3.12** |
+| Node.js | Current LTS (22+) |
+| npm | 10+ |
+| PostgreSQL | **16** (native install, no Docker) |
+| Git | Latest stable |
+
+Create two local databases before starting:
+
+```bash
+createdb disasterai_dev
+createdb disasterai_test
+```
 
 ---
 
-## 🛠️ Project Setup & Getting Started
+## Starting the backend
 
-_(I will Add setup instructions, environment requirements, and run commands here as the project grows)_
+```bash
+cd backend
+python3.12 -m venv .venv
+source .venv/bin/activate          # Windows: .venv\Scripts\activate
+pip install -r requirements.txt
+pip install -r requirements-dev.txt
+
+cp .env.example .env
+# Edit .env — fill in DATABASE_URL, JWT_SECRET, etc.
+
+uvicorn app.main:app --reload --port 8000
+# or from the root:
+npm run dev:api
+```
+
+Health check: `GET http://localhost:8000/api/v1/health`
+
+---
+
+## Starting the frontend
+
+```bash
+cd frontend
+npm install
+cp .env.example .env   # no changes needed for local dev
+
+npm run dev
+# or from the root:
+npm run dev:web
+```
+
+The frontend proxies `/api` to `http://localhost:8000` via Vite, matching production layout.
+
+---
+
+## Running tests
+
+```bash
+# Backend
+npm run test:api
+# or:  cd backend && python -m pytest
+
+# Frontend
+npm run test:web
+# or:  cd frontend && npm run test
+```
+
+---
+
+## Linting
+
+```bash
+npm run lint
+# Runs ruff, mypy, eslint, prettier, tsc --noEmit
+```
+
+Or run individually:
+
+```bash
+# Python
+cd backend
+ruff check app/ && ruff format --check app/
+mypy app/
+
+# TypeScript
+cd frontend
+npm run lint && npm run type-check
+```
+
+---
+
+## Migrations
+
+```bash
+# Run all pending migrations
+npm run migrate
+# or:  cd backend && alembic upgrade head
+
+# Create a new migration after changing models
+cd backend && alembic revision --autogenerate -m "describe the change"
+# Always review the generated file before committing.
+```
+
+> ⚠️ **Neon and Render are configured separately.** The local setup uses your local PostgreSQL.
+
+---
+
+## Important notes
+
+- **No Docker.** Local dev uses native installs.
+- **No Redis.** Rate limiting is in-memory (single-process only; documented limit).
+- **No WebSockets in Phase 1.** Both dashboards use polling.
+- **Neon** (cloud PostgreSQL) and **Render** (hosting) are connected after Phase 0 scaffolding.
+- **The LLM is an advisor, never an actor.** Every AI recommendation requires human approval before anything is dispatched.
+- **Secrets** go in `.env` (git-ignored). Never commit a real `.env`.
